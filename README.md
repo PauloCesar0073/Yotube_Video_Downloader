@@ -438,4 +438,5 @@ if __name__ == '__main__':
     FullScreenWrapper2App.eventloop()
 
 ```
-<br>
+# veja os passos no vídeo abaixo
+[![Assista ao vídeo](https://img.youtube.com/vi/5xKnsRBDtkc/0.jpg)](https://www.youtube.com/watch?v=5xKnsRBDtkc)
