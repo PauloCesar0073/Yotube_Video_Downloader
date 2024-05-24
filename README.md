@@ -16,7 +16,7 @@ copie e cole este código no seu QPython.
 ---------------------------------------------------------
 Autor  : PauloCesar0073
 Licença: MINT
-versão  :1.0.2
+versão  :1.0.3
 Descrição:
 Este aplicativo baixa vídeos do YouTube a partir de um link fornecido pelo usuário.
 
@@ -347,7 +347,7 @@ class MainScreen(Layout):
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="9px"
-            android:text="Versão 1.0.2"
+            android:text="Versão 1.0.3"
             android:textColor="#212121"
             android:gravity="center_vertical"
             android:padding="16px"/>
@@ -411,46 +411,55 @@ class MainScreen(Layout):
     </LinearLayout>
 </LinearLayout>
 """), "Youtube Downloader")
-    
-    def download_video(self, uri, title,tamanho,index, total_videos,tp):
-                # Solicitar permissão de escrita em tempo de execução
-                #request_permission(Permission.WRITE_EXTERNAL_STORAGE) 
-                response = requests.get(uri, stream=True)
-                block_size = 1024  # Tamanho dos blocos de leitura do stream (1 KB)
+    def download_video(self, uri, title, tamanho, index, total_videos, tp):
+        # Diretório de armazenamento externo do aplicativo
+        download_dir = os.path.join(os.getenv('EXTERNAL_STORAGE'), 'Download')
         
-                # Diretório de armazenamento externo do aplicativo
-                download_dir = os.path.join(os.getenv('EXTERNAL_STORAGE'), 'Download')
-               
-                # Cria o diretório de salvamento se não existir
-                if not os.path.exists(download_dir):
-                  os.makedirs(download_dir)
-                # Nome do arquivo substituindo caracteres inválidos por '_'
-                file_path = os.path.join(download_dir, f'{remover_caracteres_invalidos(title)}.mp4')
+        # Cria o diretório de salvamento se não existir
+        if not os.path.exists(download_dir):
+            os.makedirs(download_dir)
+            
+        # Nome do arquivo substituindo caracteres inválidos por '_'
+        file_path = os.path.join(download_dir, f'{remover_caracteres_invalidos(title)}.mp4')
         
-                # Barra de progresso com mensagem de progresso
-                downloaded_size = 0
-                self.views.url_input.text = ""
-                with open(file_path, 'wb') as f:
-                    for data in response.iter_content(block_size):
-                        downloaded_size += len(data)
-                        f.write(data)
-                        if index and tp ==1:
-                         self.views.video_title.text = f"\nBaixando: {title}.mp4\n\nProgresso: {porcentagem_download(int(downloaded_size),tamanho):.0f}%   ({ downloaded_size / (1024 * 1024):.2f} MB/{tamanho / (1024 * 1024):.2f} MB)"
-                         
-                        if index and tp ==2:
-                         self.views.video_title.text = f"\nBaixando O Vídeo {index} de {total_videos}: {title}.mp4\n\nProgresso: {porcentagem_download(int(downloaded_size),tamanho):.0f}%   ({ downloaded_size / (1024 * 1024):.2f} MB/{tamanho / (1024 * 1024):.2f} MB)"
-                # Mostra uma mensagem de conclusão após o download
-                self.views.video_title.text += f'\n\n\nVídeo Foi Baixado Com Sucesso!'
+        # Verifica se o arquivo já existe
+        if os.path.exists(file_path):
+            self.views.video_title.text = f"O vídeo {title} já existe!"
+            droid.makeToast("O vídeo já existe.")
+            return True
+        
+        # Solicitar permissão de escrita em tempo de execução
+        # request_permission(Permission.WRITE_EXTERNAL_STORAGE) 
+        response = requests.get(uri, stream=True)
+        block_size = 1024  # Tamanho dos blocos de leitura do stream (1 KB)
+        
+        # Barra de progresso com mensagem de progresso
+        downloaded_size = 0
+        self.views.url_input.text = ""
+        
+        with open(file_path, 'wb') as f:
+            for data in response.iter_content(block_size):
+                downloaded_size += len(data)
+                f.write(data)
                 
-                # Define o título e a mensagem da notificação
-                title1 = "Vídeo Baixado com sucesso!"
-                message = f"{title}.mp4"
-    
-                  # Exibe a notificação com título, mensagem e URI do vídeo
-                droid.notify(title1, message, title)
-                droid.makeToast("Vídeo baixado com sucesso.")    
-                
-                return True
+                if index and tp == 1:
+                    self.views.video_title.text = f"\nBaixando: {title}.mp4\n\nProgresso: {porcentagem_download(int(downloaded_size), tamanho):.0f}%   ({downloaded_size / (1024 * 1024):.2f} MB/{tamanho / (1024 * 1024):.2f} MB)"
+                    
+                if index and tp == 2:
+                    self.views.video_title.text = f"\nBaixando O Vídeo {index} de {total_videos}: {title}.mp4\n\nProgresso: {porcentagem_download(int(downloaded_size), tamanho):.0f}%   ({downloaded_size / (1024 * 1024):.2f} MB/{tamanho / (1024 * 1024):.2f} MB)"
+                    
+        # Mostra uma mensagem de conclusão após o download
+        self.views.video_title.text = f'\n\n\nVídeo Foi Baixado Com Sucesso!'
+        
+        # Define o título e a mensagem da notificação
+        title1 = "Vídeo Baixado com sucesso!"
+        message = f"{title}.mp4"
+        
+        # Exibe a notificação com título, mensagem e URI do vídeo
+        droid.notify(title1, message, title)
+        droid.makeToast("Vídeo baixado com sucesso.")
+        
+        return True
 
 
     def baixar_playlist(self, link):
@@ -480,6 +489,7 @@ class MainScreen(Layout):
             except Exception as e:
                 droid = FullScreenWrapper2App.get_android_instance()
                 self.views.video_title.text = f"Ocorreu um erro {e}, tente novamente!"
+                break
     def on_show(self):
         self.views.but_exit.add_event(click_EventHandler(self.views.but_exit, self.exit))
         self.views.but_download.add_event(click_EventHandler(self.views.but_download, self.download))
@@ -522,13 +532,16 @@ class MainScreen(Layout):
                     if isinstance(tamanho, int) and tamanho > 0 and dados:  # Verifica se tamanho é um número inteiro e positivo
                         
                       self.views.video_title.text = f'\n\n\nBaixando....'
-                      self.download_video(dados["uri"], remover_caracteres_invalidos(dados["title"]),tamanho,1,1,1	)         
+                      p = self.download_video(dados["uri"], remover_caracteres_invalidos(dados["title"]),tamanho,1,1,1	)         
+                      if p:
+                          break
                     else:
                         print("Tamanho inválido ou não encontrado, tentando novamente...")
                         continue
             
             elif 'playlist' in url:
                 self.baixar_playlist(url)
+                
             else:
                 droid = FullScreenWrapper2App.get_android_instance()
                 droid.makeToast("URL inválida ou vídeo não encontrado.")
