@@ -16,34 +16,37 @@ copie e cole este código no seu QPython.
 ---------------------------------------------------------
 Autor  : PauloCesar0073
 Licença: MINT
-
+versão  :1.0.2
 Descrição:
 Este aplicativo baixa vídeos do YouTube a partir de um link fornecido pelo usuário.
 
 Funcionalidades:
 - Solicita permissões necessárias para acessar a internet e escrever no armazenamento externo.
 - Lê a URL do vídeo do YouTube fornecida pelo usuário.
-- Extrai o ID do vídeo da URL.
 - Obtém o link de streaming do vídeo.
 - Faz o download do vídeo e salva na pasta Download do dispositivo.
 - Exibe notificações e mensagens de progresso durante o download.
-
+- baixa tanto playlists quanto videos individuais 
 Dependências:
 - Conexão com a Internet.
-- Bibliotecas do Python: os, androidhelper, requests, re, qpy, urllib.
+- Bibliotecas do Python: os, androidhelper, requests, re, qpy,ssl, urllib,pytube
 
 Como usar:
 1. Abra o YouTube, clique em compartilhar e copie o link do vídeo.
 2. Abra o aplicativo, cole o link no campo de entrada e clique em "Baixar".
 3. Aguarde o download finalizar. Os vídeos são salvos na pasta Download.
 ---------------------------------------------------------
-"""
+aaaaa"""
 import qpy
 import androidhelper
 import requests
 import re
-
-
+from pytube import Playlist 
+import os
+import ssl
+import sys
+# Criar um contexto SSL sem verificação
+ssl._create_default_https_context = ssl._create_unverified_context
 
 try:
     import urllib.request as ur
@@ -165,11 +168,11 @@ def get_content_length(uri):
   
     try:
         response = requests.head(uri)  # Faz uma requisição HEAD para obter os metadados sem baixar o arquivo
-        content_length = int(response.headers.get('content-length', 0))  # Tamanho total do arquivo em bytes
+        content_length = int(response.headers.get('content-length', False))  # Tamanho total do arquivo em bytes
         return content_length
     except requests.RequestException as e:
         print(f"Ocorreu um erro ao obter o tamanho do arquivo de {uri}: {e}")
-        return 0
+        return False
         
         
         
@@ -227,6 +230,10 @@ class MainScreen(Layout):
     android:layout_height="match_parent"
     android:background="#e0e0e0"
     android:orientation="vertical">
+    <Space
+            android:layout_width="16dp"
+            android:layout_height="wrap_content"/>
+
 
     <!-- Entrada de URL -->
     <LinearLayout
@@ -234,13 +241,14 @@ class MainScreen(Layout):
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:padding="16dp">
+        android:padding="16px">
+       
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="13px"
-            android:text="Digite a URL do Vídeo:"
+            android:text="Digite a URL do Vídeo/Playlist:"
             android:textColor="#212121"/>
 
         <EditText
@@ -248,12 +256,10 @@ class MainScreen(Layout):
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="Insira a URL do vídeo aqui"
+            android:hint="  ➡️ URL AQUI ⬅️"
             android:textColorHint="#757575"
             android:textColor="#212121"
-            android:textSizeHint="13px"
             android:textSize="13px"
-            
             android:background="#e0e0e0"/>
     </LinearLayout>
 
@@ -263,16 +269,16 @@ class MainScreen(Layout):
         android:layout_height="wrap_content"
         android:textSize="13px"
         android:text="Vídeos Salvos na pasta Download"
-        android:textColor="#212121"
+        android:textColor="#415d01"
         android:gravity="center_vertical"
-        android:padding="16dp"/>
+        android:padding="16px"/>
 
     <!-- Título do vídeo e progresso do download -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="16dp"
+        android:padding="16px"
         android:background="#e0e0e0">
 
         <TextView
@@ -282,9 +288,7 @@ class MainScreen(Layout):
             android:layout_weight="1"
             android:textSize="13px"
             android:textColor="#212121"
-            android:padding="9dp"/>
-
-     
+            android:padding="9px"/>
     </LinearLayout>
 
     <!-- Botões -->
@@ -292,7 +296,7 @@ class MainScreen(Layout):
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="16dp"
+        android:padding="16px"
         android:background="#e0e0e0">
 
         <Button
@@ -301,12 +305,12 @@ class MainScreen(Layout):
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Sair❌️"
-            android:textSize="9sp"
+            android:textSize="20px"
             android:background="#56ccf2"
             android:textColor="#ffffff"/>
 
         <Space
-            android:layout_width="16dp"
+            android:layout_width="20dp"
             android:layout_height="wrap_content"/>
 
         <Button
@@ -315,7 +319,7 @@ class MainScreen(Layout):
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Baixar✅️"
-            android:textSize="9sp"
+            android:textSize="20px"
             android:background="#317212"
             android:textColor="#ffffff"/>
     </LinearLayout>
@@ -324,9 +328,10 @@ class MainScreen(Layout):
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="20dp"
-        android:padding="16dp">
+        android:orientation="vertical"
+        android:padding="16px"
+        android:background="#ffffff"
+        android:layout_gravity="bottom">
 
         <Button
             android:id="@+id/but_visit_site"
@@ -336,11 +341,78 @@ class MainScreen(Layout):
             android:textSize="9px"
             android:textColor="#187771"
             android:background="@android:color/transparent"
-            android:padding="10dp"/>
+            android:padding="10px"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="9px"
+            android:text="Versão 1.0.2"
+            android:textColor="#212121"
+            android:gravity="center_vertical"
+            android:padding="16px"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13px"
+            android:text="Funcionalidades atuais:"
+            android:textColor="#212121"
+            android:padding="3px"/>
+             <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13px"
+            android:textColor="#212121"
+            android:paddingStart="16px"
+            android:paddingEnd="16px"
+            android:paddingBottom="8px"
+            android:text=""/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13px"
+            android:textColor="#212121"
+            android:paddingStart="16px"
+            android:paddingEnd="16px"
+            android:paddingBottom="8px"
+            android:text="• Download de vídeos 😱"/>
+   
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13px"
+            android:textColor="#212121"
+            android:paddingStart="16px"
+            android:paddingEnd="16px"
+            android:paddingBottom="8px"
+            android:text="• Suporte a download de playlists 😱"/>
+  <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13px"
+            android:textColor="#212121"
+            android:paddingStart="16px"
+            android:paddingEnd="16px"
+            android:paddingBottom="8px"
+            android:text="• Resolução de até 4k 😱"/>
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13px"
+            android:textColor="#212121"
+            android:paddingStart="16px"
+            android:paddingEnd="16px"
+            android:paddingBottom="8px"
+            android:text="• Formatos MP4 😱"/>
+   
+   
     </LinearLayout>
 </LinearLayout>
 """), "Youtube Downloader")
-    def download_video(self, uri, title,tamanho):
+    
+    def download_video(self, uri, title,tamanho,index, total_videos,tp):
                 # Solicitar permissão de escrita em tempo de execução
                 #request_permission(Permission.WRITE_EXTERNAL_STORAGE) 
                 response = requests.get(uri, stream=True)
@@ -362,8 +434,11 @@ class MainScreen(Layout):
                     for data in response.iter_content(block_size):
                         downloaded_size += len(data)
                         f.write(data)
-                        
-                        self.views.video_title.text = f"\nBaixando: {title}.mp4\n\nProgresso: {porcentagem_download(int(downloaded_size),tamanho):.0f}%   ({ downloaded_size / (1024 * 1024):.2f} MB/{tamanho / (1024 * 1024):.2f} MB)"
+                        if index and tp ==1:
+                         self.views.video_title.text = f"\nBaixando: {title}.mp4\n\nProgresso: {porcentagem_download(int(downloaded_size),tamanho):.0f}%   ({ downloaded_size / (1024 * 1024):.2f} MB/{tamanho / (1024 * 1024):.2f} MB)"
+                         
+                        if index and tp ==2:
+                         self.views.video_title.text = f"\nBaixando O Vídeo {index} de {total_videos}: {title}.mp4\n\nProgresso: {porcentagem_download(int(downloaded_size),tamanho):.0f}%   ({ downloaded_size / (1024 * 1024):.2f} MB/{tamanho / (1024 * 1024):.2f} MB)"
                 # Mostra uma mensagem de conclusão após o download
                 self.views.video_title.text += f'\n\n\nVídeo Foi Baixado Com Sucesso!'
                 
@@ -376,7 +451,35 @@ class MainScreen(Layout):
                 droid.makeToast("Vídeo baixado com sucesso.")    
                 
                 return True
+
+
+    def baixar_playlist(self, link):
+        diretorio = os.path.join(os.getenv('EXTERNAL_STORAGE'), 'Download')
+        playlist = Playlist(link)
+        total_videos = len(playlist.video_urls)
     
+        if not os.path.exists(diretorio):
+            os.makedirs(diretorio)
+    
+        for index, video_url in enumerate(playlist.video_urls, start=1):
+            try:
+                while True:
+                    idd = obter_id_youtube(video_url)
+                    data = obter_uris(idd)
+                    tamanho = get_content_length(data["uri"])
+                    dados = youtube_parse(video_url)
+                    
+                    if isinstance(tamanho, int) and tamanho > 0 and dados:  # Verifica se tamanho é um número inteiro e positivo
+                        
+                        self.views.video_title.text = f'\n\n\nBaixando o vídeo {index}.{dados["title"]} da playlist🔁'
+                        self.download_video(dados["uri"], remover_caracteres_invalidos(f'{index}.{dados["title"]}'), tamanho, index, total_videos, 2)  
+                        break  # Sai do loop enquanto se os dados são válidos
+                    else:
+                        print("Tamanho inválido ou não encontrado, tentando novamente...")
+                        continue
+            except Exception as e:
+                droid = FullScreenWrapper2App.get_android_instance()
+                self.views.video_title.text = f"Ocorreu um erro {e}, tente novamente!"
     def on_show(self):
         self.views.but_exit.add_event(click_EventHandler(self.views.but_exit, self.exit))
         self.views.but_download.add_event(click_EventHandler(self.views.but_download, self.download))
@@ -408,16 +511,24 @@ class MainScreen(Layout):
                         url.startswith('https://www.youtube.com') or
                         url.startswith('https://m.youtube.com') or
                         url.startswith('https://youtube.com/shorts/')):
-                idd = obter_id_youtube(url)   
-                data = obter_uris(idd)
-                tamanho = get_content_length(data["uri"])
-                dados = youtube_parse(url)
+                while True:
                 
-                
-                if dados:
-                  self.views.video_title.text = f'\n\n\nBaixando....'
-                  self.download_video(dados["uri"], remover_caracteres_invalidos(dados["title"]),tamanho	)         
-                	
+                    idd = obter_id_youtube(url)   
+                    data = obter_uris(idd)
+                    tamanho = get_content_length(data["uri"])
+                    dados = youtube_parse(url)
+     
+                    
+                    if isinstance(tamanho, int) and tamanho > 0 and dados:  # Verifica se tamanho é um número inteiro e positivo
+                        
+                      self.views.video_title.text = f'\n\n\nBaixando....'
+                      self.download_video(dados["uri"], remover_caracteres_invalidos(dados["title"]),tamanho,1,1,1	)         
+                    else:
+                        print("Tamanho inválido ou não encontrado, tentando novamente...")
+                        continue
+            
+            elif 'playlist' in url:
+                self.baixar_playlist(url)
             else:
                 droid = FullScreenWrapper2App.get_android_instance()
                 droid.makeToast("URL inválida ou vídeo não encontrado.")
