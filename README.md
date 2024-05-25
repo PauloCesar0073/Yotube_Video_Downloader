@@ -12,6 +12,7 @@ instale o [QPython](https://play.google.com/store/apps/details?id=org.qpython.qp
 copie e cole este código no seu QPython.
 
 ```
+
 """
 ---------------------------------------------------------
 Autor  : PauloCesar0073
@@ -29,14 +30,16 @@ Funcionalidades:
 - baixa tanto playlists quanto videos individuais 
 Dependências:
 - Conexão com a Internet.
-- Bibliotecas do Python: os, androidhelper, requests, re, qpy,ssl, urllib,pytube
+- Bibliotecas do Python: os, 
+androidhelper,
+ requests, re, qpy,ssl, urllib,pytube
 
 Como usar:
 1. Abra o YouTube, clique em compartilhar e copie o link do vídeo.
 2. Abra o aplicativo, cole o link no campo de entrada e clique em "Baixar".
 3. Aguarde o download finalizar. Os vídeos são salvos na pasta Download.
 ---------------------------------------------------------
-aaaaa"""
+"""
 import qpy
 import androidhelper
 import requests
@@ -333,15 +336,24 @@ class MainScreen(Layout):
         android:background="#ffffff"
         android:layout_gravity="bottom">
 
-        <Button
-            android:id="@+id/but_visit_site"
-            android:layout_width="wrap_content"
+       <Button
+    android:id="@+id/but_visit_site"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Desenvolvido por PauloCesar0073©️"
+    android:textSize="9px"
+    android:textColor="#187771"
+    android:background="@android:color/transparent"
+    android:padding="10px"
+    android:textAllCaps="false"
+    android:textStyle="normal"/>
+      <TextView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Desenvolvido por PauloCesar0073©️"
-            android:textSize="9px"
-            android:textColor="#187771"
-            android:background="@android:color/transparent"
-            android:padding="10px"/>
+            android:textSize="12px"
+            android:text="Atenção! compartilhar os vídeos baixados estará a correr riscos , de responder legalmente por direitos autorais"
+            android:textColor="#d20000"
+            android:padding="3px"/>
 
         <TextView
             android:layout_width="match_parent"
@@ -377,7 +389,18 @@ class MainScreen(Layout):
             android:paddingStart="16px"
             android:paddingEnd="16px"
             android:paddingBottom="8px"
-            android:text="• Download de vídeos 😱"/>
+            android:text="• Download de Shorts😱"/>
+           <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13px"
+            android:textColor="#212121"
+            android:paddingStart="16px"
+            android:paddingEnd="16px"
+            android:paddingBottom="8px"
+            android:text="• Download de Vídeos Individuais😱"/>
+   
+   
    
     <TextView
             android:layout_width="match_parent"
@@ -405,7 +428,7 @@ class MainScreen(Layout):
             android:paddingStart="16px"
             android:paddingEnd="16px"
             android:paddingBottom="8px"
-            android:text="• Formatos MP4 😱"/>
+            android:text="• Formato de saída MP4 😱"/>
    
    
     </LinearLayout>
@@ -446,7 +469,7 @@ class MainScreen(Layout):
                     self.views.video_title.text = f"\nBaixando: {title}.mp4\n\nProgresso: {porcentagem_download(int(downloaded_size), tamanho):.0f}%   ({downloaded_size / (1024 * 1024):.2f} MB/{tamanho / (1024 * 1024):.2f} MB)"
                     
                 if index and tp == 2:
-                    self.views.video_title.text = f"\nBaixando O Vídeo {index} de {total_videos}: {title}.mp4\n\nProgresso: {porcentagem_download(int(downloaded_size), tamanho):.0f}%   ({downloaded_size / (1024 * 1024):.2f} MB/{tamanho / (1024 * 1024):.2f} MB)"
+                    self.views.video_title.text = f"\nBaixando O Vídeo {index} de {total_videos} Vídeos Da Playlist\n\nTítulo Do Vídeo: {title}.mp4\n\nProgresso: {porcentagem_download(int(downloaded_size), tamanho):.0f}%   ({downloaded_size / (1024 * 1024):.2f} MB/{tamanho / (1024 * 1024):.2f} MB)"
                     
         # Mostra uma mensagem de conclusão após o download
         self.views.video_title.text = f'\n\n\nVídeo Foi Baixado Com Sucesso!'
@@ -560,6 +583,7 @@ if __name__ == '__main__':
     FullScreenWrapper2App.initialize(droid)
     FullScreenWrapper2App.show_layout(MainScreen())
     FullScreenWrapper2App.eventloop()
+
 
 ```
 # veja os passos no vídeo abaixo
