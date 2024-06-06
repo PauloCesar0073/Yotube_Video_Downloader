@@ -8,6 +8,13 @@ Baixe vídeos do YouTube em seu celular,apenas usando o interpretador python QPy
 
 instale o [QPython](https://play.google.com/store/apps/details?id=org.qpython.qpy) , após instalar abra a página de projetos,e clique em add.
 <br>
+# instalação das bibliotecas 
+abra `QPYPI` , `PIP CLIENT` , irá abrir um terminal de instalação das libs python usando o `pip`.
+cole este código e execute.
+```
+pip install requests
+pip install pytube
+```
 
 copie e cole este código no seu QPython.
 
