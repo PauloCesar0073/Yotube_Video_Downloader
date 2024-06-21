@@ -12,8 +12,7 @@ instale o [QPython](https://play.google.com/store/apps/details?id=org.qpython.qp
 abra `QPYPI` , `PIP CLIENT` , irá abrir um terminal de instalação das libs python usando o `pip`.
 cole este código e execute.
 ```
-pip install requests
-pip install pytube
+pip install requests pytube
 ```
 # Criar Novo projeto no QPython e colar o código abaixo;
 <br>
